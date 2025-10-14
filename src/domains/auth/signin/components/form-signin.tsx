@@ -3,17 +3,22 @@ import { useFormSignIn } from "../hooks/use-form-signin";
 import { FormInput } from "@/shared/components/input.form";
 import { CircleArrowLeft, Eye, EyeClosed, Key } from "lucide-react";
 import { FormButton } from "@/shared/components/button.form";
-import { useSignInMutation } from "../hooks/use-signin-mutation";
-import { useNavigate } from "react-router";
+import { useNavigate, useNavigation, useSubmit } from "react-router";
 
 export const FormSignIn = () => {
   const { form, showPassword, setShowPassword } = useFormSignIn();
   const navigate = useNavigate();
-  const { mutate, isPending } = useSignInMutation();
+  const submit = useSubmit();
+  const navigation = useNavigation();
+  const isPending = navigation.state === "submitting";
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((data) => mutate(data))}>
+      <form
+        onSubmit={form.handleSubmit((data) => {
+          submit(data, { method: "post", action: "/signin" });
+        })}
+      >
         <FormInput
           form={form}
           name="email"

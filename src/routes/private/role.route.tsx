@@ -1,20 +1,20 @@
-import { DashboardPage } from "@/domains/dashboard";
+import { ListOfRole } from "@/domains/role";
+import { authLoader } from "@/loaders/auth.loader";
 import { authMiddleware } from "@/middlewares/auth-middleware";
 import { DashboardLayout } from "@/shared/components/dashboard-layout";
 import { hydrateFallback } from "@/shared/utils/hydrate-fallback";
-import { authLoader } from "@/loaders/auth.loader";
 import type { RouteObject } from "react-router";
 
-export const dashboardRoute: RouteObject = {
-  path: "/dashboard",
-  Component: DashboardLayout,
+export const roleRoute: RouteObject = {
+  path: "/roles",
   middleware: [authMiddleware],
   loader: authLoader,
   HydrateFallback: hydrateFallback,
+  Component: DashboardLayout,
   children: [
     {
       index: true,
-      Component: DashboardPage,
+      Component: ListOfRole,
     },
   ],
 };

@@ -7,6 +7,8 @@ import { signinRoute } from "./public/auth/signin.route";
 import { signupRoute } from "./public/auth/signup.route";
 import { verificationEmailRoute } from "./public/auth/verification-email.route";
 import { dashboardRoute } from "./private/dashboard.route";
+import { userRoute } from "./private/user.route";
+import { roleRoute } from "./private/role.route";
 
 export const mainRouter = createBrowserRouter([
   homeRoute,
@@ -17,4 +19,6 @@ export const mainRouter = createBrowserRouter([
   signupRoute,
   verificationEmailRoute,
   dashboardRoute,
+  userRoute,
+  roleRoute,
 ]);

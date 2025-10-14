@@ -4,12 +4,15 @@ import axios, {
   type InternalAxiosRequestConfig,
   type AxiosResponse,
 } from "axios";
-import { redirect } from "react-router";
 import type {
   ApiResponse,
   LoginResponse,
 } from "../interfaces/api-client.interface";
-import { showErrorAlert } from "./alert";
+import type {
+  DataTableParams,
+  PaginationResponse,
+} from "../types/datatable.type";
+import { getErrorMessage } from "../utils/get-error-message";
 
 class ApiClient {
   private client: AxiosInstance;
@@ -48,10 +51,15 @@ class ApiClient {
       const response = await this.client.post<ApiResponse<LoginResponse>>(
         "/auth/refresh"
       );
-      return response.data.data.access_token;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      throw new Error("Refresh token expired");
+
+      const token = response.data?.data?.access_token;
+      if (!token) {
+        throw new Error("Refresh token expired");
+      }
+
+      return token;
+    } catch (err) {
+      throw new Error(getErrorMessage(err));
     }
   }
 
@@ -81,8 +89,7 @@ class ApiClient {
       });
       this.refreshQueue = [];
 
-      // Redirect ke signin jika refresh token expired
-      throw redirect("/signin");
+      throw new Error("REFRESH_TOKEN_EXPIRED");
     } finally {
       this.isRefreshing = false;
     }
@@ -96,6 +103,10 @@ class ApiClient {
         const originalRequest = error.config as InternalAxiosRequestConfig & {
           _retry?: boolean;
         };
+
+        if (originalRequest?.headers?.["X-Skip-Interceptor"] === "true") {
+          return Promise.reject(error);
+        }
 
         // Jika error bukan 401 atau tidak ada config, langsung reject
         if (!originalRequest || error.response?.status !== 401) {
@@ -128,19 +139,21 @@ class ApiClient {
 
   private handleError(error: AxiosError<ApiResponse>) {
     const message = error?.response?.data?.message || error.message;
-    showErrorAlert(message);
+    return new Error(message);
   }
 
   // Generic request methods
   async get<T>(
     url: string,
     params?: Record<string, string | number | boolean>
-  ): Promise<T> {
-    const response = await this.client.get<ApiResponse<T>>(url, { params });
-    return response.data.data;
+  ): Promise<ApiResponse<T>> {
+    const response = await this.client.get<ApiResponse<T>>(url, {
+      params,
+    });
+    return response.data;
   }
 
-  async post<T, D = unknown>(url: string, data: D): Promise<ApiResponse<T>> {
+  async post<T, D = unknown>(url: string, data?: D): Promise<ApiResponse<T>> {
     const response = await this.client.post<ApiResponse<T>>(url, data);
     return response.data;
   }
@@ -157,6 +170,16 @@ class ApiClient {
 
   async delete<T>(url: string): Promise<ApiResponse<T>> {
     const response = await this.client.delete<ApiResponse<T>>(url);
+    return response.data;
+  }
+
+  async getPagination<T>(
+    url: string,
+    params?: DataTableParams
+  ): Promise<PaginationResponse<T>> {
+    const response = await this.client.get<PaginationResponse<T>>(url, {
+      params,
+    });
     return response.data;
   }
 }
