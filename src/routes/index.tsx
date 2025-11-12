@@ -9,6 +9,7 @@ import { verificationEmailRoute } from "./public/auth/verification-email.route";
 import { dashboardRoute } from "./private/dashboard.route";
 import { userRoute } from "./private/user.route";
 import { roleRoute } from "./private/role.route";
+import { NotFoundPage } from "@/shared/components/not-found-page";
 
 export const mainRouter = createBrowserRouter([
   homeRoute,
@@ -21,4 +22,8 @@ export const mainRouter = createBrowserRouter([
   dashboardRoute,
   userRoute,
   roleRoute,
+  {
+    path: "*",
+    Component: NotFoundPage,
+  },
 ]);
